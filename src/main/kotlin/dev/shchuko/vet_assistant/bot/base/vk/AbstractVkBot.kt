@@ -8,7 +8,7 @@ import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import kotlinx.coroutines.delay
 
 open class AbstractVkBot<T>(mainStateMachine: StateMachine<BotContext<T>>) : Bot {
-    override fun reply(update: BotUpdate, text: String?, keyboard: BaseKeyboardMarkup?) {
+    override fun sendMessage(update: BotUpdate, text: String?, keyboard: BaseKeyboardMarkup?) {
 //        TODO("Not yet implemented")
     }
 

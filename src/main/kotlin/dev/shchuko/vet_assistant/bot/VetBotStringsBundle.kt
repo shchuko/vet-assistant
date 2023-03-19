@@ -3,7 +3,7 @@ package dev.shchuko.vet_assistant.bot
 import java.text.MessageFormat
 import java.util.*
 
-object MessagesResourceBundle {
+object VetBotStringsBundle {
     val EN_LOCALE: Locale = Locale.ENGLISH
     val RU_LOCALE: Locale = Locale("ru")
 
@@ -14,7 +14,7 @@ object MessagesResourceBundle {
 
     val DEFAULT_LOCALE = DEFAULT_LOCALE_BUNDLE.locale
 
-    fun getString(key: String, locale: Locale = DEFAULT_LOCALE, vararg args: Any?): String {
+    fun getString(key: String, locale: Locale? = null, vararg args: Any?): String {
         val (pattern, effectiveLocale) = when (locale) {
             RU_LOCALE -> RU.getWithLocaleOrFallback(key)
             EN_LOCALE -> EN.getWithLocaleOrFallback(key)

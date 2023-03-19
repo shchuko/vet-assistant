@@ -1,31 +1,25 @@
 package dev.shchuko.vet_assistant.bot.base.api.keyboard
 
+import java.util.*
+
 class BaseKeyboardMarkup(builderInit: Builder.() -> Unit) {
-    val rows: List<List<String>>
+    val rows: List<List<(Locale) -> String>>
 
     init {
-        rows = Builder().apply(builderInit).verify().rows
+        rows = Builder().apply(builderInit).rows
     }
 
     @KeyboardDslBuilderMarker
     class Builder {
-        internal val rows = mutableListOf<List<String>>()
+        internal val rows = mutableListOf<List<(Locale) -> String>>()
 
         fun row(rowInit: Row.() -> Unit) = rows.add(Row().apply(rowInit).buttons)
 
-        internal fun verify(): Builder {
-            val duplicatedNames = rows.flatten().groupBy { it }.filter { it.value.size > 1 }
-            check(duplicatedNames.isEmpty()) {
-                "Keyboard button names are duplicated: ${duplicatedNames.keys}"
-            }
-            return this
-        }
-
         @KeyboardDslBuilderMarker
         class Row {
-            internal val buttons = mutableListOf<String>()
-            fun button(text: String) {
-                buttons.add(text)
+            internal val buttons = mutableListOf<(Locale) -> String>()
+            fun button(textProvider: (Locale) -> String) {
+                buttons.add(textProvider)
             }
         }
     }
