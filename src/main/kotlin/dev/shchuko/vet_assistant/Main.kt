@@ -15,7 +15,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.java.KoinJavaComponent.getKoin
 
-val myModule = module {
+private val myModule = module {
     single<MedicineServiceRepository> { MedicineServiceRepositoryImpl() }
     single<MedicineService> { MedicineServiceImpl(get()) }
     single<Bot>(named("VetTelegramBot")) { VetTelegramBot() }
