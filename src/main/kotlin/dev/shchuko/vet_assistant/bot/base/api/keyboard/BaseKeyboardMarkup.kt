@@ -1,7 +1,7 @@
 package dev.shchuko.vet_assistant.bot.base.api.keyboard
 
 class BaseKeyboardMarkup(builderInit: Builder.() -> Unit) {
-    protected val rows: List<List<String>>
+    val rows: List<List<String>>
 
     init {
         rows = Builder().apply(builderInit).verify().rows
