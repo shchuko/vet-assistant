@@ -1,10 +1,12 @@
 package dev.shchuko.vet_assistant.bot.base.api
 
-import dev.shchuko.vet_assistant.bot.base.api.keyboard.BaseKeyboardMarkup
+import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
 import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 
 interface Bot {
-    fun sendMessage(update: BotUpdate, text: String? = null, keyboard: BaseKeyboardMarkup? = null)
+    suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard? = null): String
 
-    suspend fun poll()
+    suspend fun editMessage(messageId: String, text: String? = null, keyboard: BotKeyboard? = null): String
+
+    suspend fun poll() // TODO refactor, generalize logic of serializing/deserializing context. Use kotlinx.coroutines Channel?
 }

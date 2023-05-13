@@ -33,6 +33,8 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
 
+    implementation("ru.homyakin:iuliia-java:1.8") // TODO get rid of vulnerable dependency
+    implementation("com.github.yvasyliev:java-vk-bots-longpoll-api:4.1.1")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_logger_version")
 
     implementation("com.github.omarmiatello.telegram:client:6.1")

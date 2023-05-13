@@ -1,4 +1,0 @@
-package dev.shchuko.vet_assistant.bot.base.statemachine
-
-@StateMachineDslBuilderMarker
-internal interface StateMachineDslBuilder

@@ -8,6 +8,7 @@ import dev.shchuko.vet_assistant.medicine.api.service.MedicineService
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepository
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepositoryImpl
 import dev.shchuko.vet_assistant.medicine.impl.service.MedicineServiceImpl
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
@@ -18,8 +19,9 @@ import org.koin.java.KoinJavaComponent.getKoin
 private val myModule = module {
     single<MedicineServiceRepository> { MedicineServiceRepositoryImpl() }
     single<MedicineService> { MedicineServiceImpl(get()) }
-    single<Bot>(named("VetTelegramBot")) { VetTelegramBot() }
-    single<Bot>(named("VetVkBot")) { VetVkBot() }
+
+    single<Bot>(named("VetTelegramBot")) { VetTelegramBot(System.getenv("TELEGRAM_BOT_API_KEY")) }
+    single<Bot>(named("VetVkBot")) { VetVkBot(System.getenv("VK_BOT_API_KEY")) }
 }
 
 fun main() {
@@ -28,7 +30,7 @@ fun main() {
 
         runBlocking {
             getKoin().getAll<Bot>().forEach { bot ->
-                launch {
+                launch(Dispatchers.IO) {
                     bot.poll()
                 }
             }

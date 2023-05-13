@@ -1,12 +1,12 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
-interface State<C> {
+interface State<in C : StateMachineContext> {
     val id: String
         get() = this::class.simpleName!!
 
-    fun enter(context: C, error: Throwable?)
+    fun preEnterFilter(context: C) = true
 
-    fun isPauseBefore(context: C): Boolean = false
+    suspend fun enter(context: C, error: Throwable?)
 
     fun isPauseAfter(context: C): Boolean = false
 

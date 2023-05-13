@@ -1,6 +1,6 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
-class StateTransitions<C>(builderInit: Builder<C>.() -> Unit) {
+class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Unit) {
     internal val onSuccess: Transition<C>
     internal val onError: Transition<C>?
 
@@ -11,13 +11,13 @@ class StateTransitions<C>(builderInit: Builder<C>.() -> Unit) {
         onError = builder.onError
     }
 
-    abstract class Transition<C> {
-        internal abstract fun getNextState(context: C): State<C>?
+    abstract class Transition<in C : StateMachineContext> {
+        internal abstract fun getNextStateId(context: C): String?
 
-        internal abstract fun allStatesUsedInTransition(): Sequence<State<C>>
+        internal abstract fun allStatesUsedInTransition(): Sequence<String>
     }
 
-    class Builder<C> : StateMachineDslBuilder {
+    class Builder<C : StateMachineContext> : StateMachineDslBuilder {
         /**
          * Transition will be performed if previous state traversed without errors. Mandatory.
          */
@@ -31,9 +31,9 @@ class StateTransitions<C>(builderInit: Builder<C>.() -> Unit) {
         var onError: Transition<C>? = null
 
         /**
-         * Plain transition. After previous state run completion, state machine execution continues with [nextState].
+         * Plain transition. After previous state run completion, state machine execution continues with [nextStateId].
          */
-        fun plain(nextState: State<C>): Transition<C> = PlainTransition(nextState)
+        fun plain(nextStateId: String): Transition<C> = PlainTransition(nextStateId)
 
         /**
          * Choice transition which uses context [C] to determine the next state the state machine must continue
@@ -53,13 +53,13 @@ class StateTransitions<C>(builderInit: Builder<C>.() -> Unit) {
         }
     }
 
-    class PlainTransition<C> internal constructor(private val nextState: State<C>) :
+    class PlainTransition<C : StateMachineContext> internal constructor(private val nextStateId: String) :
         Transition<C>() {
-        override fun getNextState(context: C) = nextState
-        override fun allStatesUsedInTransition() = sequenceOf(nextState)
+        override fun getNextStateId(context: C) = nextStateId
+        override fun allStatesUsedInTransition() = sequenceOf(nextStateId)
     }
 
-    class ChoiceTransition<C> private constructor(
+    class ChoiceTransition<C : StateMachineContext> private constructor(
         private val choiceMatchers: List<ChoiceEntry<C>>,
         private val elseBranch: ChoiceEntry<C>?
     ) : Transition<C>() {
@@ -68,47 +68,47 @@ class StateTransitions<C>(builderInit: Builder<C>.() -> Unit) {
             assert(choiceMatchers.none { it.predicate == null })
         }
 
-        class Builder<C> : StateMachineDslBuilder {
+        class Builder<C : StateMachineContext> : StateMachineDslBuilder {
             private val conditionMatchers = mutableListOf<ChoiceEntry<C>>()
             private var elseBranchMarcher: ChoiceEntry<C>? = null
 
             /**
-             * Declare new [nextState] the state machine must continue execution with if [predicate] returned true.
+             * Declare new [nextStateId] the state machine must continue execution with if [predicate] returned true.
              * All such states are traversed sequentially, the state machine will continue with the first match.
              * If no matches found, it will continue with [default] if set, or finish its execution.
              */
-            fun case(predicate: (C) -> Boolean, nextState: State<C>) {
-                conditionMatchers.add(ChoiceEntry(predicate, nextState))
+            fun case(nextStateId: String, predicate: (C) -> Boolean) {
+                conditionMatchers.add(ChoiceEntry(predicate, nextStateId))
             }
 
             /**
-             * Fallback [nextState] to traverse into if no predicates set with [case] matched.
+             * Fallback [nextStateId] to traverse into if no predicates set with [case] matched.
              */
-            fun default(nextState: State<C>) {
+            fun default(nextStateId: String) {
                 check(elseBranchMarcher == null) { "ifNoConditionMatched is already set" }
-                elseBranchMarcher = ChoiceEntry(null, nextState)
+                elseBranchMarcher = ChoiceEntry(null, nextStateId)
             }
 
             internal fun build() = ChoiceTransition(conditionMatchers, elseBranchMarcher)
         }
 
-        override fun allStatesUsedInTransition(): Sequence<State<C>> {
-            val conditionalStates = choiceMatchers.asSequence().map { it.nextState }
+        override fun allStatesUsedInTransition(): Sequence<String> {
+            val conditionalStates = choiceMatchers.asSequence().map { it.nextStateId }
             if (elseBranch != null) {
-                return conditionalStates + sequenceOf(elseBranch.nextState)
+                return conditionalStates + sequenceOf(elseBranch.nextStateId)
             }
             return conditionalStates
         }
 
 
-        private data class ChoiceEntry<C>(val predicate: ((C) -> Boolean)?, val nextState: State<C>)
+        private data class ChoiceEntry<C>(val predicate: ((C) -> Boolean)?, val nextStateId: String)
 
-        override fun getNextState(context: C): State<C>? =
-            (choiceMatchers.find { it.predicate!!(context) } ?: elseBranch)?.nextState
+        override fun getNextStateId(context: C): String? =
+            (choiceMatchers.find { it.predicate!!(context) } ?: elseBranch)?.nextStateId
     }
 
-    class TransitionStub<C> : Transition<C>() {
-        override fun getNextState(context: C) = null
-        override fun allStatesUsedInTransition() = emptySequence<State<C>>()
+    class TransitionStub<C : StateMachineContext> : Transition<C>() {
+        override fun getNextStateId(context: C) = null
+        override fun allStatesUsedInTransition() = emptySequence<String>()
     }
 }

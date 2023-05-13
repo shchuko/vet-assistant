@@ -26,7 +26,7 @@ class ClosestWordsSearchUtil(
             // use average length as a base for threshold selection
             val avgLen = (first.length + second.length) / 3
             // allow to change not more than a quarter of average length. if edit distance is bigger - drop the word.
-            val threshold = avgLen / 4
+            val threshold = avgLen / 3
             // fit in threshold range
             val calcThreshold = threshold.coerceIn(LEVENSHTEIN_THRESHOLD_MIN, LEVENSHTEIN_THRESHOLD_MAX)
             return levenshteinCalcMap[calcThreshold]!!.apply(first, second)
