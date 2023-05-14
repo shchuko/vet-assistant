@@ -8,8 +8,6 @@ import dev.shchuko.vet_assistant.medicine.api.service.MedicineService
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepository
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepositoryImpl
 import dev.shchuko.vet_assistant.medicine.impl.service.MedicineServiceImpl
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
@@ -30,9 +28,7 @@ fun main() {
 
         runBlocking {
             getKoin().getAll<Bot>().forEach { bot ->
-                launch(Dispatchers.IO) {
-                    bot.poll()
-                }
+                bot.start()
             }
         }
     }
