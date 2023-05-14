@@ -8,10 +8,7 @@ import api.longpoll.bots.model.objects.additional.buttons.TextButton
 import dev.shchuko.vet_assistant.bot.base.api.Bot
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
-import dev.shchuko.vet_assistant.bot.base.api.model.BotChat
-import dev.shchuko.vet_assistant.bot.base.api.model.BotMessage
-import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
-import dev.shchuko.vet_assistant.bot.base.api.model.BotUser
+import dev.shchuko.vet_assistant.bot.base.api.model.*
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import kotlinx.coroutines.coroutineScope
@@ -36,6 +33,9 @@ private class VkBotUpdate(
     override val user: VkBotUser
 ) : BotUpdate
 
+private data class VkSendMessageResponse(override val messageId: String) : SendMessageResponse
+
+
 open class AbstractVkBot<in C : BotContext>(
     private val mainStateMachine: StateMachine<C>,
     private val botContextBuilder: StateMachineContext.Builder<C>,
@@ -44,16 +44,16 @@ open class AbstractVkBot<in C : BotContext>(
     private val accessToken = apiKey
     private val contexts = mutableMapOf<Int, String>()
 
-    override suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard?): String {
+    override suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard?): SendMessageResponse {
         val send = vk.messages.send()
         send.setPeerId(update.chat.chatId.toInt())
         send.setMessage(text)
         send.setKeyboard(keyboard.toVkFullKeyboard())
         val messageId = send.executeAsync().await().response
-        return "${update.chat.chatId}:${messageId}"
+        return VkSendMessageResponse("${update.chat.chatId}:${messageId}")
     }
 
-    override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): String {
+    override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): SendMessageResponse {
         val split = messageId.split(":")
         val realChatId = split[0].toInt()
         val realMessageId = split[1].toInt()
@@ -67,7 +67,7 @@ open class AbstractVkBot<in C : BotContext>(
         require(keyboard == null || keyboard.inline)
         edit.setKeyboard(keyboard.toVkFullKeyboard())
         edit.executeAsync().await()
-        return messageId
+        return VkSendMessageResponse(messageId)
     }
 
     override suspend fun poll() {

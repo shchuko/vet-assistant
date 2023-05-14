@@ -4,10 +4,7 @@ import com.github.omarmiatello.telegram.*
 import dev.shchuko.vet_assistant.bot.base.api.Bot
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
-import dev.shchuko.vet_assistant.bot.base.api.model.BotChat
-import dev.shchuko.vet_assistant.bot.base.api.model.BotMessage
-import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
-import dev.shchuko.vet_assistant.bot.base.api.model.BotUser
+import dev.shchuko.vet_assistant.bot.base.api.model.*
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import kotlinx.coroutines.coroutineScope
@@ -33,6 +30,8 @@ private class TgBotUpdate(
     val callbackQueryId: String?
 ) : BotUpdate
 
+private data class TgSendMessageResponse(override val messageId: String) : SendMessageResponse
+
 open class AbstractTelegramBot<in C : BotContext>(
     private val mainStateMachine: StateMachine<C>,
     private val botContextBuilder: StateMachineContext.Builder<C>,
@@ -40,7 +39,7 @@ open class AbstractTelegramBot<in C : BotContext>(
 ) : Bot {
     private val telegramClient = TelegramClient(apiKey)
 
-    override suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard?): String {
+    override suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard?): SendMessageResponse {
         update as TgBotUpdate
         if (update.callbackQueryId != null) {
             telegramClient.answerCallbackQuery(update.callbackQueryId)
@@ -50,10 +49,10 @@ open class AbstractTelegramBot<in C : BotContext>(
             text = text,
             reply_markup = keyboard.toTelegramFullKeyboard()
         )
-        return "${response.result.chat.id}:${response.result.message_id}"
+        return TgSendMessageResponse("${response.result.chat.id}:${response.result.message_id}")
     }
 
-    override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): String {
+    override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): SendMessageResponse {
         require(keyboard == null || keyboard.inline)
         val telegramFullKeyboard = keyboard.toTelegramFullKeyboard() as? InlineKeyboardMarkup
 
@@ -71,7 +70,7 @@ open class AbstractTelegramBot<in C : BotContext>(
             reply_markup = telegramFullKeyboard
         )
 
-        return "${response.result.chat.id}:${response.result.message_id}"
+        return TgSendMessageResponse("${response.result.chat.id}:${response.result.message_id}")
     }
 
 

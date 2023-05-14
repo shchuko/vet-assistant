@@ -114,7 +114,7 @@ object MedicineSearchStateMachine : StateMachine<VetBotContext>("MedicineSearchS
                 context.update,
                 VetBotUiBundle.getString("message.medicine.search.ask.name", context.update.user.locale),
                 keyboard = keyboard
-            )
+            ).messageId
         }
 
         isPauseAfter = { true }
