@@ -22,10 +22,14 @@ object VetBotStateMachine2 : StateMachine<VetBotContext>("VetBotStateMachine2", 
         onEnter = { context, error ->
             // TODO logging
             error?.printStackTrace()
-            context.bot.sendMessage(
-                context.update,
-                VetBotUiBundle.getString("message.unexpected.error.happened", context.update.user.locale)
-            )
+
+            try {
+                context.bot.sendMessage(
+                    context.update,
+                    VetBotUiBundle.getString("message.unexpected.error.happened", context.update.user.locale)
+                )
+            } catch (_: Exception) {
+            }
         }
 
         transitions = {
