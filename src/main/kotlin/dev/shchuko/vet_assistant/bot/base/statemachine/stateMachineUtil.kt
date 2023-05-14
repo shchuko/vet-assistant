@@ -14,11 +14,11 @@ class StateBuilder<C : StateMachineContext> : StateMachineDslBuilder {
 
     var onEnter: suspend State<C>.(context: C, error: Throwable?) -> Unit = { _, _ -> }
 
-    var preEnterFilter: (State<C>.(context: C) -> Boolean)? = null
+    var preEnterFilter: (suspend State<C>.(context: C) -> Boolean)? = null
 
-    var isPauseAfter: (State<C>.(context: C) -> Boolean)? = null
+    var isPauseAfter: (suspend State<C>.(context: C) -> Boolean)? = null
 
-    var reEnterSelfPredicate: (State<C>.(context: C) -> Boolean)? = null
+    var reEnterSelfPredicate: (suspend State<C>.(context: C) -> Boolean)? = null
 
     internal fun createState(id: String): State<C> {
         check(this::transitions.isInitialized) { "${this::class.simpleName}#${this::transitions.name} is not initialized" }
@@ -28,14 +28,14 @@ class StateBuilder<C : StateMachineContext> : StateMachineDslBuilder {
 
             override suspend fun enter(context: C, error: Throwable?) = this@StateBuilder.onEnter(this, context, error)
 
-            override fun preEnterFilter(context: C) =
+            override suspend fun preEnterFilter(context: C) =
                 this@StateBuilder.preEnterFilter?.invoke(this, context) ?: super.preEnterFilter(context)
 
-            override fun isPauseAfter(context: C) =
+            override suspend fun isPauseAfter(context: C) =
                 this@StateBuilder.isPauseAfter?.invoke(this, context) ?: super.isPauseAfter(context)
 
 
-            override fun isReEnterSelf(context: C) =
+            override suspend fun isReEnterSelf(context: C) =
                 this@StateBuilder.reEnterSelfPredicate?.invoke(this, context) ?: super.isReEnterSelf(context)
         }
     }
@@ -83,9 +83,9 @@ open class StateMachineAsState<WRAPPING_CONTEXT : StateMachineContext, SUB_CONTE
         stateMachine.run(subContext)
     }
 
-    override fun isPauseAfter(context: WRAPPING_CONTEXT) = context.subContextMapper().isPaused(stateMachine)
+    override suspend fun isPauseAfter(context: WRAPPING_CONTEXT) = context.subContextMapper().isPaused(stateMachine)
 
-    override fun isReEnterSelf(context: WRAPPING_CONTEXT) = context.subContextMapper().isRunning(stateMachine)
+    override suspend fun isReEnterSelf(context: WRAPPING_CONTEXT) = context.subContextMapper().isRunning(stateMachine)
 }
 
 

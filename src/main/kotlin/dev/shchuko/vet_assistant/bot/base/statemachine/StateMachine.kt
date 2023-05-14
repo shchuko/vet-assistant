@@ -1,5 +1,7 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
+import kotlinx.coroutines.runBlocking
+
 open class StateMachine<in C : StateMachineContext>(val id: String, init: Builder<C>.() -> Unit) {
     internal val initialState: State<C>
     private val transitions: Map<String, StateTransitions<in C>>
@@ -18,6 +20,8 @@ open class StateMachine<in C : StateMachineContext>(val id: String, init: Builde
         val globalErrorHandlerId = builder.globalErrorHandlerId
         globalErrorHandler = if (globalErrorHandlerId != null) states.getValue(globalErrorHandlerId) else null
     }
+
+    fun runBlocking(machineContext: C) = runBlocking { run(machineContext) }
 
     suspend fun run(machineContext: C) {
         if (!machineContext.has(this) || machineContext.getNextState(this) == null) {
