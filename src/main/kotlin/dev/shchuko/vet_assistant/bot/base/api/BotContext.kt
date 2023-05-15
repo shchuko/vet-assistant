@@ -19,7 +19,7 @@ open class BotContext : StateMachineContext() {
     }
 
     @Transient
-    lateinit var bot: Bot
+    lateinit var bot: BotCommands
 
     @Transient
     lateinit var update: BotUpdate

@@ -1,12 +1,12 @@
-package dev.shchuko.vet_assistant.bot.base.telegram
+package dev.shchuko.vet_assistant.bot.base.impl.telegram
 
 import com.github.omarmiatello.telegram.InlineKeyboardMarkup
 import com.github.omarmiatello.telegram.TelegramClient
-import dev.shchuko.vet_assistant.bot.base.api.BotBase
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
 import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.api.model.SendMessageResponse
+import dev.shchuko.vet_assistant.bot.base.impl.BotBase
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import kotlinx.coroutines.CoroutineName
@@ -15,7 +15,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 
-open class TelegramBot<in C : BotContext>(
+internal class TelegramBot<in C : BotContext>(
     mainStateMachine: StateMachine<C>,
     botContextBuilder: StateMachineContext.Builder<C>,
     apiKey: String,

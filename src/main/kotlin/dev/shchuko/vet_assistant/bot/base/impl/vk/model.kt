@@ -1,4 +1,4 @@
-package dev.shchuko.vet_assistant.bot.base.vk
+package dev.shchuko.vet_assistant.bot.base.impl.vk
 
 import dev.shchuko.vet_assistant.bot.base.api.model.*
 import java.util.*

@@ -1,13 +1,13 @@
-package dev.shchuko.vet_assistant.bot.base.vk
+package dev.shchuko.vet_assistant.bot.base.impl.vk
 
 import api.longpoll.bots.LongPollBot
 import api.longpoll.bots.methods.VkBotsMethods
 import api.longpoll.bots.model.events.messages.MessageNew
-import dev.shchuko.vet_assistant.bot.base.api.BotBase
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
 import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.api.model.SendMessageResponse
+import dev.shchuko.vet_assistant.bot.base.impl.BotBase
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import kotlinx.coroutines.coroutineScope
@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
 
-open class VkBot<in C : BotContext>(
+internal class VkBot<in C : BotContext>(
     mainStateMachine: StateMachine<C>,
     botContextBuilder: StateMachineContext.Builder<C>,
     apiKey: String

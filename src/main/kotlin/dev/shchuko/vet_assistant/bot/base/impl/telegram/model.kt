@@ -1,4 +1,4 @@
-package dev.shchuko.vet_assistant.bot.base.telegram
+package dev.shchuko.vet_assistant.bot.base.impl.telegram
 
 import dev.shchuko.vet_assistant.bot.base.api.model.*
 import java.util.*

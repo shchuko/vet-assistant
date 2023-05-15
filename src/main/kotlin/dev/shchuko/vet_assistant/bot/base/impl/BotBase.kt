@@ -1,5 +1,8 @@
-package dev.shchuko.vet_assistant.bot.base.api
+package dev.shchuko.vet_assistant.bot.base.impl
 
+import dev.shchuko.vet_assistant.bot.base.api.Bot
+import dev.shchuko.vet_assistant.bot.base.api.BotCommands
+import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
@@ -11,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors.newFixedThreadPool
 import java.util.concurrent.Executors.newSingleThreadExecutor
 
-abstract class BotBase<in C : BotContext, CHAT_ID_T>(
+internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
     private val mainStateMachine: StateMachine<C>,
     private val botContextBuilder: StateMachineContext.Builder<C>,
-) : Bot {
+) : Bot, BotCommands {
     private data class ChatContext(val mutex: Mutex, var botContextSerialized: String)
 
     private val pollDispatcher = newSingleThreadExecutor().asCoroutineDispatcher()

@@ -1,4 +1,4 @@
-package dev.shchuko.vet_assistant.bot.base.vk
+package dev.shchuko.vet_assistant.bot.base.impl.vk
 
 import api.longpoll.bots.model.objects.additional.Keyboard
 import api.longpoll.bots.model.objects.additional.buttons.Button
