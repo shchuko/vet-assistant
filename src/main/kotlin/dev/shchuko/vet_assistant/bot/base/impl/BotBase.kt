@@ -7,7 +7,7 @@ import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
@@ -24,7 +24,7 @@ internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
     private val ioDispatcher = newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
 
     private val cs = CoroutineScope(pollDispatcher)
-    private val updatesChannel: Channel<Pair<BotUpdate, ChatContext>> = Channel(capacity = Channel.UNLIMITED)
+    private val updatesFlow = MutableSharedFlow<Pair<BotUpdate, ChatContext>>()
     private val chatContextMap: MutableMap<CHAT_ID_T, ChatContext> = ConcurrentHashMap()
 
     open suspend fun pollImpl() {}
@@ -36,9 +36,9 @@ internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
         }
     }
 
-    private suspend fun consumeUpdates() = coroutineScope {
+    private suspend fun consumeUpdates(): Unit = coroutineScope {
         withContext(pollDispatcher) {
-            for (pair in updatesChannel) {
+            updatesFlow.collect { pair ->
                 launch(ioDispatcher) {
                     val (update, chatCtx) = pair
                     chatCtx.mutex.withLock {
@@ -65,7 +65,7 @@ internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
             val botContext = botContextBuilder.serialize(botContextBuilder.createNew())
             ChatContext(mutex, botContext)
         }
-        updatesChannel.send(Pair(update, context))
+        updatesFlow.emit(Pair(update, context))
     }
 
     protected fun sendUpdate2(update: BotUpdate, chatKey: CHAT_ID_T) = cs.launch(pollDispatcher) {
