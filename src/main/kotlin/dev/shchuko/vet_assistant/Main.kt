@@ -33,7 +33,7 @@ fun main() {
 
         val bots = BotFactory.createBots<VetBotContext>()
         runBlocking {
-            bots.forEach { it.start() }
+            bots.forEach { it.launch() }
         }
     }
 }

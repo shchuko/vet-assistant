@@ -29,7 +29,7 @@ internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
 
     open suspend fun pollImpl() {}
 
-    override suspend fun start() {
+    override suspend fun launch() {
         cs.launch {
             launch { restartOnError { consumeUpdates() } }
             launch(pollDispatcher) { restartOnError { pollImpl() } }
