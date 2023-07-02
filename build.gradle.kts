@@ -16,7 +16,7 @@ group = "dev.shchuko"
 version = "0.0.1"
 
 application {
-    mainClass.set("dev.shchuko.ApplicationKt")
+    mainClass.set("dev.shchuko.vet_assistant.MainKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dvet.config.development=$isDevelopment")
