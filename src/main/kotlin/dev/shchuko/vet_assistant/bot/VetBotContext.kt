@@ -1,7 +1,7 @@
 package dev.shchuko.vet_assistant.bot
 
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
-import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
+import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.modules.SerializersModule
@@ -10,7 +10,7 @@ import kotlinx.serialization.modules.subclass
 
 @Serializable
 class VetBotContext : BotContext() {
-    object Builder : StateMachineContext.Builder<VetBotContext>() {
+    object Builder : StateMachine.Context.Builder<VetBotContext>() {
         override fun createNew(): VetBotContext = VetBotContext()
 
         override fun deserialize(string: String): VetBotContext =

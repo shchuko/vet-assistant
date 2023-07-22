@@ -1,7 +1,7 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
 
-fun <C : StateMachineContext> StateMachine.Builder<C>.state(id: String, init: StateBuilder<C>.() -> Unit): State<C> {
+fun <C : StateMachine.Context> StateMachine.Builder<C>.state(id: String, init: StateBuilder<C>.() -> Unit): State<C> {
     val builder = StateBuilder<C>().apply(init)
     val state = builder.createState(id)
     val transitions = builder.transitions
@@ -9,7 +9,7 @@ fun <C : StateMachineContext> StateMachine.Builder<C>.state(id: String, init: St
     return state
 }
 
-class StateBuilder<C : StateMachineContext> : StateMachineDslBuilder {
+class StateBuilder<C : StateMachine.Context> : StateMachineDslBuilder {
     lateinit var transitions: StateTransitions.Builder<C>.() -> Unit
 
     var onEnter: suspend State<C>.(context: C, error: Throwable?) -> Unit = { _, _ -> }
@@ -42,7 +42,7 @@ class StateBuilder<C : StateMachineContext> : StateMachineDslBuilder {
 }
 
 
-fun <C : StateMachineContext> StateMachine.Builder<C>.plainChain(
+fun <C : StateMachine.Context> StateMachine.Builder<C>.plainChain(
     vararg states: State<C>,
     lastStateTransitionsInit: StateTransitions.Builder<C>.() -> Unit
 ) {
@@ -60,20 +60,20 @@ fun <C : StateMachineContext> StateMachine.Builder<C>.plainChain(
     state(states.last(), lastStateTransitionsInit)
 }
 
-fun <C : StateMachineContext> StateMachine.Builder<C>.subStateMachine(
+fun <C : StateMachine.Context> StateMachine.Builder<C>.subStateMachine(
     id: String,
     stateMachine: StateMachine<C>,
     transitions: StateTransitions.Builder<C>.() -> Unit
 ) = subStateMachine(id, stateMachine, { this }, transitions)
 
-fun <WRAPPING_CONTEXT : StateMachineContext, SUB_CONTEXT : StateMachineContext> StateMachine.Builder<WRAPPING_CONTEXT>.subStateMachine(
+fun <WRAPPING_CONTEXT : StateMachine.Context, SUB_CONTEXT : StateMachine.Context> StateMachine.Builder<WRAPPING_CONTEXT>.subStateMachine(
     id: String,
     stateMachine: StateMachine<SUB_CONTEXT>,
     contextMapper: WRAPPING_CONTEXT.() -> SUB_CONTEXT,
     transitions: StateTransitions.Builder<WRAPPING_CONTEXT>.() -> Unit
 ) = state(StateMachineAsState(id, stateMachine, contextMapper), transitions)
 
-open class StateMachineAsState<WRAPPING_CONTEXT : StateMachineContext, SUB_CONTEXT : StateMachineContext>(
+open class StateMachineAsState<WRAPPING_CONTEXT : StateMachine.Context, SUB_CONTEXT : StateMachine.Context>(
     override val id: String,
     private val stateMachine: StateMachine<SUB_CONTEXT>,
     private val subContextMapper: WRAPPING_CONTEXT.() -> SUB_CONTEXT,

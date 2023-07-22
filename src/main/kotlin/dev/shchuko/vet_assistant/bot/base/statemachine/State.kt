@@ -1,6 +1,6 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
-interface State<in C : StateMachineContext> {
+interface State<in C : StateMachine.Context> {
     val id: String
         get() = this::class.simpleName!!
 

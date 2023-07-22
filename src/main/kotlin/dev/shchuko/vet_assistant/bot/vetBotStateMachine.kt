@@ -8,8 +8,12 @@ import dev.shchuko.vet_assistant.bot.base.statemachine.subStateMachine
 import dev.shchuko.vet_assistant.medicine.api.model.MedicineSearchResult
 import dev.shchuko.vet_assistant.medicine.api.service.MedicineService
 import org.koin.java.KoinJavaComponent
+import org.slf4j.LoggerFactory
 
-object VetBotStateMachine2 : StateMachine<VetBotContext>("VetBotStateMachine2", {
+
+object VetBotStateMachine : StateMachine<VetBotContext>("VetBotStateMachine2", {
+    val logger = LoggerFactory.getLogger(VetBotStateMachine::class.java)
+
     initialStateId = "main_menu"
     globalErrorHandlerId = "global_error_handler"
 
@@ -20,15 +24,15 @@ object VetBotStateMachine2 : StateMachine<VetBotContext>("VetBotStateMachine2", 
 
     state("global_error_handler") {
         onEnter = { context, error ->
-            // TODO logging
-            error?.printStackTrace()
+            logger.error("Global error handler has caught an error", error)
 
             try {
                 context.bot.sendMessage(
                     context.update,
                     VetBotUiBundle.getString("message.unexpected.error.happened", context.update.user.locale)
                 )
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                logger.error("Global error hangler failed to report error to user", e)
             }
         }
 

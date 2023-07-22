@@ -1,6 +1,6 @@
 package dev.shchuko.vet_assistant.bot.base.statemachine
 
-class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Unit) {
+class StateTransitions<C : StateMachine.Context>(builderInit: Builder<C>.() -> Unit) {
     internal val onSuccess: Transition<C>
     internal val onError: Transition<C>?
 
@@ -11,13 +11,13 @@ class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Un
         onError = builder.onError
     }
 
-    abstract class Transition<in C : StateMachineContext> {
+    abstract class Transition<in C : StateMachine.Context> {
         internal abstract fun getNextStateId(context: C): String?
 
         internal abstract fun allStatesUsedInTransition(): Sequence<String>
     }
 
-    class Builder<C : StateMachineContext> : StateMachineDslBuilder {
+    class Builder<C : StateMachine.Context> : StateMachineDslBuilder {
         /**
          * Transition will be performed if previous state traversed without errors. Mandatory.
          */
@@ -53,13 +53,13 @@ class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Un
         }
     }
 
-    class PlainTransition<C : StateMachineContext> internal constructor(private val nextStateId: String) :
+    class PlainTransition<C : StateMachine.Context> internal constructor(private val nextStateId: String) :
         Transition<C>() {
         override fun getNextStateId(context: C) = nextStateId
         override fun allStatesUsedInTransition() = sequenceOf(nextStateId)
     }
 
-    class ChoiceTransition<C : StateMachineContext> private constructor(
+    class ChoiceTransition<C : StateMachine.Context> private constructor(
         private val choiceMatchers: List<ChoiceEntry<C>>,
         private val elseBranch: ChoiceEntry<C>?
     ) : Transition<C>() {
@@ -68,7 +68,7 @@ class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Un
             assert(choiceMatchers.none { it.predicate == null })
         }
 
-        class Builder<C : StateMachineContext> : StateMachineDslBuilder {
+        class Builder<C : StateMachine.Context> : StateMachineDslBuilder {
             private val conditionMatchers = mutableListOf<ChoiceEntry<C>>()
             private var elseBranchMarcher: ChoiceEntry<C>? = null
 
@@ -107,7 +107,7 @@ class StateTransitions<C : StateMachineContext>(builderInit: Builder<C>.() -> Un
             (choiceMatchers.find { it.predicate!!(context) } ?: elseBranch)?.nextStateId
     }
 
-    class TransitionStub<C : StateMachineContext> : Transition<C>() {
+    class TransitionStub<C : StateMachine.Context> : Transition<C>() {
         override fun getNextStateId(context: C) = null
         override fun allStatesUsedInTransition() = emptySequence<String>()
     }

@@ -3,7 +3,6 @@ package dev.shchuko.vet_assistant.bot.base.api
 import dev.shchuko.vet_assistant.bot.base.impl.telegram.TelegramBot
 import dev.shchuko.vet_assistant.bot.base.impl.vk.VkBot
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
-import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
 import org.koin.java.KoinJavaComponent.getKoin
 
 object BotFactory {
@@ -11,7 +10,7 @@ object BotFactory {
         internal val vkApiKey: String?,
         internal val telegramToken: String?,
         internal val stateMachine: StateMachine<C>,
-        internal val contextBuilder: StateMachineContext.Builder<C>
+        internal val contextBuilder: StateMachine.Context.Builder<C>
     )
 
     fun <C : BotContext> createBots(): List<Bot> {

@@ -24,6 +24,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -37,7 +38,7 @@ dependencies {
     implementation("com.github.yvasyliev:java-vk-bots-longpoll-api:4.1.1")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_logger_version")
 
-    implementation("com.github.omarmiatello.telegram:client:6.1")
+    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.1.0")
 
     implementation("org.apache.commons:commons-text:1.10.0")
 

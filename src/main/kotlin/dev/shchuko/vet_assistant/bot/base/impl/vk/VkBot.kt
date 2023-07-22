@@ -9,25 +9,20 @@ import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.api.model.SendMessageResponse
 import dev.shchuko.vet_assistant.bot.base.impl.BotBase
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
-import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-
 
 internal class VkBot<in C : BotContext>(
     mainStateMachine: StateMachine<C>,
-    botContextBuilder: StateMachineContext.Builder<C>,
+    botContextBuilder: StateMachine.Context.Builder<C>,
     apiKey: String
 ) : BotBase<C, Int>(mainStateMachine, botContextBuilder) {
-    private val pollingThread = Executors.newSingleThreadExecutor()
     private val vk = VkBotsMethods(apiKey)
 
     private val underlyingBot = object : LongPollBot() {
         override fun getAccessToken() = apiKey
 
-        override fun onMessageNew(messageNew: MessageNew) {
+        override fun onMessageNew(messageNew: MessageNew) = try {
             val user = VkBotUser(
                 messageNew.message.peerId.toString(),
                 messageNew.message.peerId.toString(),
@@ -40,7 +35,10 @@ internal class VkBot<in C : BotContext>(
                 user,
             )
             val key = messageNew.message.peerId
-            sendUpdate2(botUpdate, key)
+            runBlocking {// TODO non-blocking?
+                sendUpdate(botUpdate, key)
+            }
+        } catch (_: Throwable) {
         }
     }
 
@@ -54,24 +52,33 @@ internal class VkBot<in C : BotContext>(
     }
 
     override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): SendMessageResponse {
+        require(keyboard == null || keyboard.inline)
         val split = messageId.split(":")
         val realChatId = split[0].toInt()
         val realMessageId = split[1].toInt()
 
-        val edit = vk.messages.edit()
-        edit.setPeerId(realChatId)
-        edit.setMessageId(realMessageId)
-        if (text != null) {
-            edit.setMessage(text)
+        val edit = vk.messages.edit().apply {
+            setPeerId(realChatId)
+            setMessageId(realMessageId)
+            text?.let { setMessage(it) }
+            setKeyboard(keyboard.toVkFullKeyboard())
         }
-        require(keyboard == null || keyboard.inline)
-        edit.setKeyboard(keyboard.toVkFullKeyboard())
+
         edit.executeAsync().await()
         return VkSendMessageResponse(messageId)
     }
 
-    override suspend fun pollImpl(): Unit = coroutineScope {
-        // TODO support cancellation?
-        CompletableFuture.runAsync({ underlyingBot.startPolling() }, pollingThread).await()
+    override suspend fun pollForUpdates(): Unit = coroutineScope {
+        launch(Dispatchers.IO) {
+            underlyingBot.startPolling()
+        }
+        launch {
+            while (true) {
+                ensureActive()
+                delay(1000)
+            }
+        }.invokeOnCompletion {
+            underlyingBot.stopPolling()
+        }
     }
 }

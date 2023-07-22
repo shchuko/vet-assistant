@@ -1,102 +1,113 @@
 package dev.shchuko.vet_assistant.bot.base.impl.telegram
 
-import com.github.omarmiatello.telegram.InlineKeyboardMarkup
-import com.github.omarmiatello.telegram.TelegramClient
+import com.github.kotlintelegrambot.bot
+import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.dispatcher.callbackQuery
+import com.github.kotlintelegrambot.dispatcher.text
+import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import dev.shchuko.vet_assistant.bot.base.api.BotContext
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
 import dev.shchuko.vet_assistant.bot.base.api.model.BotUpdate
 import dev.shchuko.vet_assistant.bot.base.api.model.SendMessageResponse
 import dev.shchuko.vet_assistant.bot.base.impl.BotBase
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
-import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachineContext
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 internal class TelegramBot<in C : BotContext>(
     mainStateMachine: StateMachine<C>,
-    botContextBuilder: StateMachineContext.Builder<C>,
+    botContextBuilder: StateMachine.Context.Builder<C>,
     apiKey: String,
 ) : BotBase<C, String>(mainStateMachine, botContextBuilder) {
-    private val telegramClient = TelegramClient(apiKey)
+    private val underlyingBot = bot {
+        token = apiKey
+
+        dispatch {
+            text {
+                val botUpdate = TgBotUpdate(
+                    TgBotMessage(text),
+                    TgBotChat(message.chat.id.toString()),
+                    TgBotUser(
+                        message.from!!.id.toString(),
+                        message.from?.username!!,
+                        languageCodeToLocale(message.from?.languageCode)
+                    ),
+                    null
+                )
+                val key = botUpdate.chat.chatId to botUpdate.user.userId
+                sendUpdate(botUpdate, key.toString())
+            }
+
+            callbackQuery {
+                val botUpdate = TgBotUpdate(
+                    TgBotMessage(callbackQuery.data),
+                    TgBotChat(callbackQuery.message!!.chat.id.toString()),
+                    TgBotUser(
+                        callbackQuery.from.id.toString(),
+                        callbackQuery.from.username!!,
+                        languageCodeToLocale(callbackQuery.from.languageCode)
+                    ),
+                    null
+                )
+                val key = botUpdate.chat.chatId to botUpdate.user.userId
+                sendUpdate(botUpdate, key.toString())
+            }
+        }
+    }
 
     override suspend fun sendMessage(update: BotUpdate, text: String, keyboard: BotKeyboard?): SendMessageResponse {
         update as TgBotUpdate
 
-        // always answer a callback query, ignore errors if any
         if (update.callbackQueryId != null) {
-            try {
-                telegramClient.answerCallbackQuery(update.callbackQueryId)
-            } catch (_: Exception) {
-            }
+            underlyingBot.answerCallbackQuery(update.callbackQueryId)
         }
-        val response = telegramClient.sendMessage(
-            chat_id = update.chat.chatId,
+
+        val response = underlyingBot.sendMessage(
+            chatId = ChatId.fromId(update.chat.chatId.toLong()),
             text = text,
-            reply_markup = keyboard.toTelegramFullKeyboard()
+            replyMarkup = keyboard.toTelegramFullKeyboard()
         )
-        return TgSendMessageResponse("${response.result.chat.id}:${response.result.message_id}")
+        response.get().messageId
+        return TgSendMessageResponse("${update.chat.chatId}:${response.get().messageId}")
     }
+
 
     override suspend fun editMessage(messageId: String, text: String?, keyboard: BotKeyboard?): SendMessageResponse {
         require(keyboard == null || keyboard.inline)
+        val response = TgSendMessageResponse(messageId)
+        if (text == null && keyboard == null) return response
+
         val telegramFullKeyboard = keyboard.toTelegramFullKeyboard() as? InlineKeyboardMarkup
-
         val split = messageId.split(":")
-        val realChatId = split[0]
+        val realChatId = ChatId.fromId(split[0].toLong())
         val realMessageId = split[1].toLong()
-        val response = if (text != null) telegramClient.editMessageText(
-            realChatId,
-            realMessageId,
-            text = text,
-            reply_markup = telegramFullKeyboard
-        ) else telegramClient.editMessageReplyMarkup(
-            realChatId,
-            realMessageId,
-            reply_markup = telegramFullKeyboard
-        )
 
-        return TgSendMessageResponse("${response.result.chat.id}:${response.result.message_id}")
+        val answer = if (text != null) {
+            underlyingBot.editMessageText(realChatId, realMessageId, text = text, replyMarkup = telegramFullKeyboard)
+        } else {
+            underlyingBot.editMessageReplyMarkup(realChatId, realMessageId, replyMarkup = telegramFullKeyboard)
+        }
+        return response
     }
 
+    override suspend fun pollForUpdates(): Unit = coroutineScope {
+        underlyingBot.startPolling()
 
-    override suspend fun pollImpl() {
-        coroutineScope {
-            launch(CoroutineName("telegram-poll")) {
-                var offset: Long? = -100
-                while (this.isActive) {
-                    try {
-                        val (ok, updates) = telegramClient.getUpdates(offset, timeout = 10)
-                        if (ok) {
-                            updates.forEach { update ->
-                                offset = update.update_id + 1
-                                val message = update.message
-                                val callbackQuery = update.callback_query
-                                if (message == null && callbackQuery == null) return@forEach
-
-                                val user = message?.from ?: callbackQuery!!.from
-                                val chatId =
-                                    message?.chat?.id?.toString() ?: callbackQuery!!.message?.chat?.id!!.toString()
-                                val messageText = message?.text ?: callbackQuery!!.data!!
-
-                                val botUpdate = TgBotUpdate(
-                                    TgBotMessage(messageText),
-                                    TgBotChat(chatId),
-                                    TgBotUser(user.id.toString(), user.username!!, null),
-                                    callbackQuery?.id
-                                )
-                                val key = chatId to user.id
-                                sendUpdate(botUpdate, key.toString())
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
+        launch {
+            while (true) {
+                ensureActive()
+                delay(1000)
             }
+        }.invokeOnCompletion {
+            underlyingBot.stopPolling()
         }
     }
+
+    private fun languageCodeToLocale(code: String?): Locale? = code?.let { Locale.forLanguageTag(it) }
 }
 

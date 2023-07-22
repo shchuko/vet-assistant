@@ -1,18 +1,18 @@
 package dev.shchuko.vet_assistant.bot.base.impl.telegram
 
-import com.github.omarmiatello.telegram.*
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.KeyboardReplyMarkup
+import com.github.kotlintelegrambot.entities.ReplyKeyboardRemove
+import com.github.kotlintelegrambot.entities.ReplyMarkup
+import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import dev.shchuko.vet_assistant.bot.base.api.keyboard.BotKeyboard
 
-internal fun BotKeyboard?.toTelegramFullKeyboard(): KeyboardOption {
-    if (this == null) return ReplyKeyboardRemove(remove_keyboard = true)
-    return if (inline) InlineKeyboardMarkup(rows.map { row ->
+internal fun BotKeyboard?.toTelegramFullKeyboard(): ReplyMarkup {
+    if (this == null) return ReplyKeyboardRemove()
+    return if (inline) InlineKeyboardMarkup.create(rows.map { row ->
         row.map { button ->
-            InlineKeyboardButton(button, callback_data = button)
+            InlineKeyboardButton.CallbackData(button, callbackData = button)
         }
     })
-    else ReplyKeyboardMarkup(resize_keyboard = true, one_time_keyboard = true, keyboard = rows.map { row ->
-        row.map { button ->
-            KeyboardButton(button)
-        }
-    })
+    else KeyboardReplyMarkup.createSimpleKeyboard(resizeKeyboard = true, oneTimeKeyboard = true, keyboard = rows)
 }
