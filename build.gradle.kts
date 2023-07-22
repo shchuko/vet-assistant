@@ -5,6 +5,8 @@ val kotlinx_serialization: String by project
 val ktor_version: String by project
 val koin_version: String by project
 val koin_logger_version: String by project
+val sl4j_version: String by project
+val logback_version: String by project
 
 plugins {
     kotlin("jvm") version "1.8.10"
@@ -30,6 +32,10 @@ repositories {
 dependencies {
     runtimeOnly("io.insert-koin:koin-core:$koin_version")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
+
+    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("ch.qos.logback:logback-classic:1.4.8")
+    implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
 
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")

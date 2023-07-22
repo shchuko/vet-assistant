@@ -8,12 +8,14 @@ import dev.shchuko.vet_assistant.medicine.api.service.MedicineService
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepository
 import dev.shchuko.vet_assistant.medicine.impl.repository.MedicineServiceRepositoryImpl
 import dev.shchuko.vet_assistant.medicine.impl.service.MedicineServiceImpl
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger(::main.javaClass)
 
 private val myModule = module {
     single<MedicineServiceRepository> { MedicineServiceRepositoryImpl() }
@@ -31,13 +33,16 @@ private val myModule = module {
 
 fun main() {
     startKoin {
+        logger.info("Initializing Koin")
         modules(myModule)
 
+        logger.info("Creating bots")
         val bots = BotFactory.createBots<VetBotContext>()
 
+        logger.info("Starting ${bots.size} bots")
         runBlocking {
             bots.forEach { launch { it.startPolling() } }
-            delay(5000)
+            logger.info("Bots started")
         }
     }
 }
