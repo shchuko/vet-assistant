@@ -12,7 +12,7 @@ import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 
-internal class VkBot<in C : BotContext>(
+internal class VkBot<C : BotContext>(
     mainStateMachine: StateMachine<C>,
     botContextBuilder: StateMachine.Context.Builder<C>,
     apiKey: String

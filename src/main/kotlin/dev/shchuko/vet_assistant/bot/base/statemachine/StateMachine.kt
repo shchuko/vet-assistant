@@ -7,9 +7,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
-open class StateMachine<in C : StateMachine.Context>(val id: String, init: Builder<C>.() -> Unit) {
+open class StateMachine<C : StateMachine.Context>(val id: String, init: Builder<C>.() -> Unit) {
     internal val initialState: State<C>
-    private val transitions: Map<String, StateTransitions<in C>>
+    private val transitions: Map<String, StateTransitions<C>>
     private val states: Map<String, State<C>>
     private val globalErrorHandler: State<C>?
 
@@ -101,7 +101,7 @@ open class StateMachine<in C : StateMachine.Context>(val id: String, init: Build
          */
         var globalErrorHandlerId: String? = null
 
-        internal val transitions: MutableMap<String, StateTransitions<in C>> = mutableMapOf()
+        internal val transitions: MutableMap<String, StateTransitions<C>> = mutableMapOf()
         internal val states: MutableMap<String, State<C>> = mutableMapOf()
 
         fun state(state: State<C>, connector: StateTransitions.Builder<C>.() -> Unit) {

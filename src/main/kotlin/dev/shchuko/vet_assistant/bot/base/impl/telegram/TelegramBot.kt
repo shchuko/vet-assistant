@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 
-internal class TelegramBot<in C : BotContext>(
+internal class TelegramBot<C : BotContext>(
     mainStateMachine: StateMachine<C>,
     botContextBuilder: StateMachine.Context.Builder<C>,
     apiKey: String,

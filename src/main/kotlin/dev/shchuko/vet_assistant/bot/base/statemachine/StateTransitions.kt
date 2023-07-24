@@ -11,7 +11,7 @@ class StateTransitions<C : StateMachine.Context>(builderInit: Builder<C>.() -> U
         onError = builder.onError
     }
 
-    abstract class Transition<in C : StateMachine.Context> {
+    abstract class Transition<C : StateMachine.Context> {
         internal abstract fun getNextStateId(context: C): String?
 
         internal abstract fun allStatesUsedInTransition(): Sequence<String>

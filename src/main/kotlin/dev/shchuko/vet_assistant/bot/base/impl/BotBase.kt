@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
-internal abstract class BotBase<in C : BotContext, CHAT_ID_T>(
+internal abstract class BotBase<C : BotContext, CHAT_ID_T>(
     private val mainStateMachine: StateMachine<C>,
     private val botContextBuilder: StateMachine.Context.Builder<C>,
 ) : Bot, BotCommands {
