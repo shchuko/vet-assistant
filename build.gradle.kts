@@ -35,7 +35,7 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("ch.qos.logback:logback-classic:1.4.8")
-    implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
 
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
