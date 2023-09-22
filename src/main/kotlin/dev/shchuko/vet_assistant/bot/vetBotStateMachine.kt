@@ -5,8 +5,8 @@ import dev.shchuko.vet_assistant.bot.base.api.keyboard.buildKeyboard
 import dev.shchuko.vet_assistant.bot.base.statemachine.StateMachine
 import dev.shchuko.vet_assistant.bot.base.statemachine.state
 import dev.shchuko.vet_assistant.bot.base.statemachine.subStateMachine
-import dev.shchuko.vet_assistant.medicine.api.model.MedicineSearchResult
-import dev.shchuko.vet_assistant.medicine.api.service.MedicineService
+import dev.shchuko.vet_assistant.medicine.api.MedicineSearchResult
+import dev.shchuko.vet_assistant.medicine.api.MedicineService
 import org.koin.java.KoinJavaComponent
 import org.slf4j.LoggerFactory
 
@@ -171,36 +171,24 @@ object MedicineSearchStateMachine : StateMachine<VetBotContext>("MedicineSearchS
             val medicineService = KoinJavaComponent.getKoin().get<MedicineService>()
             val requestedName = requireNotNull(context.medicineSearchName)
             context.medicineSearchName = null
-            val searchResult = medicineService.findMedicine(requestedName)
-
-            when (searchResult.type) {
-                MedicineSearchResult.ResultType.EXACT_MATCH -> context.bot.sendMessage(
+            when (val searchResult = medicineService.searchMedicine(requestedName)) {
+                is MedicineSearchResult.SingleMatchByName -> context.bot.sendMessage(
                     context.update, VetBotUiBundle.getString(
-                        "message.medicine.search.result.exact.match",
+                        if (searchResult.misspell) "message.medicine.search.result.misspell.single.match" else "message.medicine.search.result.exact.match",
                         context.update.user.locale,
-                        searchResult.result[0].name,
-                        searchResult.result[0].description
+                        searchResult.value.name,
+                        searchResult.value.description
                     )
                 )
 
-                MedicineSearchResult.ResultType.MISSPELL_SINGLE_MATCH -> context.bot.sendMessage(
-                    context.update, VetBotUiBundle.getString(
-                        "message.medicine.search.result.misspell.single.match",
-                        context.update.user.locale,
-                        requestedName,
-                        searchResult.result[0].name,
-                        searchResult.result[0].description
-                    )
-                )
-
-                MedicineSearchResult.ResultType.MISSPELL_MULTIPLE_MATCH -> context.bot.sendMessage(
+                is MedicineSearchResult.MultipleMatch -> context.bot.sendMessage(
                     context.update, VetBotUiBundle.getString("message.medicine.search.result.misspell.multiple.match",
                         context.update.user.locale,
                         requestedName,
-                        searchResult.result.joinToString("\n") { "- ${it.name}" })
+                        (searchResult.medicineNames + searchResult.substanceNames).joinToString("\n") { "- $it" })
                 )
 
-                MedicineSearchResult.ResultType.NONE_MATCH -> context.bot.sendMessage(
+                is MedicineSearchResult.NoneMatch -> context.bot.sendMessage(
                     context.update, VetBotUiBundle.getString(
                         "message.medicine.search.result.none.match", context.update.user.locale, requestedName
                     )
