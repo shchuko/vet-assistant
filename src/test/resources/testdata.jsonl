@@ -1,0 +1,192 @@
+{
+  "name": "Лекарство A-1",
+  "analogues": [
+    "АналогB-2",
+    "Аналог3C"
+  ],
+  "substances": [],
+  "recommendations": "Собаки:\n5 тонн на килограмм.\nКоты:\n10 тонн на килограмм"
+}
+{
+  "name": "Лекарство D_4",
+  "analogues": [
+    "Аналог_5E",
+    "Аналог6 F"
+  ],
+  "substances": [],
+  "recommendations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nVestibulum condimentum."
+}
+{
+  "name": "Лекарство7G",
+  "analogues": [
+    "Аналог_8H",
+    "Аналог9_I"
+  ],
+  "substances": [],
+  "recommendations": "Pellentesque quis lectus faucibus, suscipit odio a, aliquet nulla.\n Nam a dui sed lacus euismod auctor."
+}
+{
+  "name": "Лекарство-J10",
+  "analogues": [
+    "Аналог11K",
+    "Аналог-L12"
+  ],
+  "substances": [],
+  "recommendations": "Donec volutpat semper lorem, vel dictum risus iaculis non.\n Vivamus in mi pulvinar, consectetur erat vel, congue lacus."
+}
+{
+  "name": "ЛекарствоM13",
+  "analogues": [
+    "Аналог-N14",
+    "Аналог15O"
+  ],
+  "substances": [],
+  "recommendations": "Curabitur ac semper ante, in tempus nisl.\n Donec enim magna, scelerisque non nisl non, pulvinar ornare nulla."
+}
+{
+  "name": "Лекарство P16",
+  "analogues": [],
+  "substances": [
+    "вещество 1",
+    "вещество-2",
+    "Вещество3",
+    "Вещество 4",
+    "веществоО-5"
+  ],
+  "recommendations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nVestibulum condimentum."
+}
+{
+  "name": "ЛекарствоQ-17",
+  "analogues": [],
+  "substances": [
+    "Вещество-6"
+  ],
+  "recommendations": "Pellentesque quis lectus faucibus, suscipit odio a, aliquet nulla.\n Nam a dui sed lacus euismod auctor."
+}
+{
+  "name": "Лекарство18R",
+  "analogues": [],
+  "substances": [
+    "вещество 7",
+    "вещество 1"
+  ],
+  "recommendations": "Donec volutpat semper lorem, vel dictum risus iaculis non.\n Vivamus in mi pulvinar, consectetur erat vel, congue lacus."
+}
+{
+  "name": "Лекарство_S19",
+  "analogues": [],
+  "substances": [
+    "вещество-2",
+    "Вещество 3",
+    "веществоО-4"
+  ],
+  "recommendations": "Curabitur ac semper ante, in tempus nisl.\n Donec enim magna, scelerisque non nisl non, pulvinar ornare nulla."
+}
+{
+  "name": "ЛекарствоT-20",
+  "analogues": [],
+  "substances": [
+    "Вещество 5",
+    "веществоО-6",
+    "вещество7"
+  ],
+  "recommendations": [
+    "Собаки:\n5 тонн на килограмм.\nКоты:\n10 тонн на килограмм"
+  ]
+}
+{
+  "name": "ЛекарствоU21",
+  "analogues": [],
+  "substances": [],
+  "recommendations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nVestibulum condimentum."
+}
+{
+  "name": "Лекарство-V22",
+  "analogues": [],
+  "substances": [],
+  "recommendations": "Pellentesque quis lectus faucibus, suscipit odio a, aliquet nulla.\n Nam a dui sed lacus euismod auctor."
+}
+{
+  "name": "Лекарство23W",
+  "analogues": [],
+  "substances": [],
+  "recommendations": "Donec volutpat semper lorem, vel dictum risus iaculis non.\n Vivamus in mi pulvinar, consectetur erat vel, congue lacus."
+}
+{
+  "name": "ЛекарствоX_24",
+  "analogues": [],
+  "substances": [],
+  "recommendations": "Curabitur ac semper ante, in tempus nisl.\n Donec enim magna, scelerisque non nisl non, pulvinar ornare nulla."
+}
+{
+  "name": "Лекарство Y25",
+  "analogues": [],
+  "substances": [],
+  "recommendations": [
+    "Собаки:\n5 тонн на килограмм.\nКоты:\n10 тонн на килограмм"
+  ]
+}
+{
+  "name": "ЛекарствоZ-26",
+  "analogues": [
+    "Аналог27 A",
+    "АналогB_28",
+    "Аналог 29C"
+  ],
+  "substances": [
+    "вещество 1"
+  ],
+  "recommendations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nVestibulum condimentum."
+}
+{
+  "name": "ЛекарствоD-30",
+  "analogues": [
+    "АналогE_31",
+    "Аналог 32F"
+  ],
+  "substances": [
+    "Вещество-2",
+    "Вещество 6"
+  ],
+  "recommendations": "Pellentesque quis lectus faucibus, suscipit odio a, aliquet nulla.\n Nam a dui sed lacus euismod auctor."
+}
+{
+  "name": "ЛекарствоG33",
+  "analogues": [
+    "Аналог 34H",
+    "АналогI_35"
+  ],
+  "substances": [
+    "вещество 3",
+    "Вещество-7",
+    "вещество 1"
+  ],
+  "recommendations": "Donec volutpat semper lorem, vel dictum risus iaculis non.\n Vivamus in mi pulvinar, consectetur erat vel, congue lacus."
+}
+{
+  "name": "ЛекарствоJ_36",
+  "analogues": [
+    "АналогK37 ",
+    "Аналог_ 38L"
+  ],
+  "substances": [
+    "веществоО-4",
+    "вещество 1"
+  ],
+  "recommendations": "Curabitur ac semper ante, in tempus nisl.\n Donec enim magna, scelerisque non nisl non, pulvinar ornare nulla."
+}
+{
+  "name": "Лекарство-M39",
+  "analogues": [
+    "Аналог 40N",
+    "АналогO-41"
+  ],
+  "substances": [
+    "Вещество 5",
+    "веществоО-2",
+    "вещество 3"
+  ],
+  "recommendations": [
+    "Собаки:\n5 тонн на килограмм.\nКоты:\n10 тонн на килограмм"
+  ]
+}
