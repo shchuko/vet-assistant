@@ -41,12 +41,15 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
 
     implementation("ru.homyakin:iuliia-java:1.8") // TODO get rid of vulnerable dependency
-    implementation("com.github.yvasyliev:java-vk-bots-longpoll-api:4.1.1")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_logger_version")
 
     implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.1.0")
 
     implementation("org.apache.commons:commons-text:1.10.0")
+
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.0")
+    implementation("com.petersamokhin.vksdk:core:0.0.8")
+    implementation("com.petersamokhin.vksdk:http-client-jvm-okhttp:0.0.8")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
