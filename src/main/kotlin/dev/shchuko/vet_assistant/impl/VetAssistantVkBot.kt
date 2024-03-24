@@ -17,7 +17,7 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
         client.onMessage { handleMessage(it) }
     }
 
-    private val cs = CoroutineScope(Dispatchers.Default)
+    private val cs = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
 
     private fun handleMessage(event: MessageNew): Job = cs.launch {
