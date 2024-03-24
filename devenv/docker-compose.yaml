@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: bind
+        source: config/create_database.sql
+        target: /docker-entrypoint-initdb.d/create_tables.sql

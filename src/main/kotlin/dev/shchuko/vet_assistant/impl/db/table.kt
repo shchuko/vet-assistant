@@ -3,7 +3,7 @@ package dev.shchuko.vet_assistant.impl.db
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ReferenceOption
 
-object MedicineTable : UUIDTable() {
+object MedicineTable : UUIDTable("MEDICINE") {
     val name = varchar("name", 255)
     val description = varchar("description", 3000)
 
@@ -12,7 +12,7 @@ object MedicineTable : UUIDTable() {
     }
 }
 
-object ActiveIngredientTable : UUIDTable() {
+object ActiveIngredientTable : UUIDTable("ACTIVE_INGREDIENT") {
     val medicineId = reference("medicine_id", MedicineTable, onDelete = ReferenceOption.CASCADE)
     val name = varchar("name", 255)
 
@@ -21,7 +21,7 @@ object ActiveIngredientTable : UUIDTable() {
     }
 }
 
-object MedicineAnalogueTable : UUIDTable() {
+object MedicineAnalogueTable : UUIDTable("MEDICINE_ANALOGUE") {
     val medicineId = reference("medicine_id", MedicineTable, onDelete = ReferenceOption.CASCADE)
     val name = varchar("name", 255)
 
@@ -30,7 +30,7 @@ object MedicineAnalogueTable : UUIDTable() {
     }
 }
 
-object TelegramUserTable : UUIDTable() {
+object TelegramUserTable : UUIDTable("TELEGRAM_USER") {
     val telegramUsername = varchar("telegram_username", 255).uniqueIndex()
     val isAdmin = bool("is_admin")
 }

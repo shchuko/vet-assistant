@@ -44,7 +44,7 @@ private fun initDB() {
 }
 
 fun main() {
-    initDB()
+    DatabaseConnection.init()
 
     startKoin {
         modules(mainModule)

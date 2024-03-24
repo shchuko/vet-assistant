@@ -60,6 +60,10 @@ dependencies {
 
     implementation("com.h2database:h2:2.2.224")
 
+    runtimeOnly("org.postgresql:postgresql:42.7.3")
+
+    implementation("org.flywaydb:flyway-core:9.22.2")
+
     testImplementation("io.insert-koin:koin-test:$koin_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
