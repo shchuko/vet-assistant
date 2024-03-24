@@ -1,1 +1,0 @@
-web: java -jar build/libs/vet-tg-bot-0.0.1-all.jar

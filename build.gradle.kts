@@ -9,13 +9,12 @@ val sl4j_version: String by project
 val logback_version: String by project
 
 plugins {
-    id("com.github.johnrengelman.shadow") version "7.+"
     kotlin("jvm") version "1.9.10"
     application
     kotlin("plugin.serialization") version "1.9.10"
 }
 
-group = "dev.shchuko.vet_assistant"
+group = "dev.shchuko"
 version = "0.0.1"
 
 application {
@@ -67,8 +66,4 @@ dependencies {
 
     testImplementation("io.insert-koin:koin-test:$koin_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-}
-
-task("stage") {
-    dependsOn("shadowJar")
 }
