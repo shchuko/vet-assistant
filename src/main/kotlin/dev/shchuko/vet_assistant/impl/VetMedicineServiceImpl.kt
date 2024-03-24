@@ -11,7 +11,13 @@ import java.util.*
 
 class VetMedicineServiceImpl : VetMedicineService {
     override fun search(name: String): MedicineSearchResult = transaction {
-        val result = MedicineEntity.find { MedicineTable.name eq name }.toList()
+        val trimmed = name.trim()
+
+        var result = MedicineEntity.find { MedicineTable.name eq trimmed }.toList()
+        if (result.isEmpty()) {
+            val capitalized = trimmed.capitalize()
+            result = MedicineEntity.find { MedicineTable.name eq capitalized }.toList()
+        }
 
         val medicine = result.singleOrNull()?.let { medicineEntity ->
             MedicineWithDescription(
@@ -70,5 +76,13 @@ class VetMedicineServiceImpl : VetMedicineService {
                 }
             }
         }
+    }
+
+    private fun String.capitalize(): String {
+        if (this.isEmpty()) {
+            return this;
+        }
+
+        return substring(0, 1).uppercase() + substring(1)
     }
 }
