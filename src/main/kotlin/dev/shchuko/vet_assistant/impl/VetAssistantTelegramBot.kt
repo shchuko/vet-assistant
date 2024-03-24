@@ -9,6 +9,7 @@ import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.TelegramFile
+import com.github.kotlintelegrambot.logging.LogLevel
 import dev.shchuko.vet_assistant.api.UserService
 import org.koin.core.component.inject
 
@@ -20,6 +21,7 @@ class VetAssistantTelegramBot(apiKey: String) : VetAssistantBot() {
 
     private val bot = bot {
         token = apiKey
+        logLevel = LogLevel.Error
 
         dispatch {
             text {
