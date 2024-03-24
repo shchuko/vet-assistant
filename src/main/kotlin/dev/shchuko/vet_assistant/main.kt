@@ -27,7 +27,7 @@ private val vkApiKey = System.getenv("VK_API_KEY") ?: error("Missing VK_API_KEY"
 private val telegramApiKey = System.getenv("TELEGRAM_API_KEY") ?: error("Missing TELEGRAM_API_KEY")
 
 val mainModule = module {
-    single<VetMedicineService> { VetMedicineServiceImpl() }
+    single<VetMedicineService>(createdAtStart = true) { VetMedicineServiceImpl() }
     single<MedicineListSerializer> { MedicineListCsvSerializer() }
     single<UserService> { UserServiceImpl() }
 
@@ -49,6 +49,7 @@ fun main() {
     startKoin {
         modules(mainModule)
     }
+    getKoin().get<VetMedicineService>().init()
 
     runBlocking {
         getKoin().getAll<IBot>().forEach { bot ->

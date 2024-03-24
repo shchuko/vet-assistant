@@ -10,16 +10,21 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class VetMedicineServiceImpl : VetMedicineService {
+    private var index: Map<String, String> = mapOf()
+
+    override fun init() {
+        rebuildIndex()
+    }
+
     override fun search(name: String): MedicineSearchResult = transaction {
-        val trimmed = name.trim()
+        val indexLookupResult = index[name.trim().lowercase()] ?: return@transaction MedicineSearchResult(
+            misspellMatches = emptyList(),
+            medicine = null,
+        )
 
-        var result = MedicineEntity.find { MedicineTable.name eq trimmed }.toList()
-        if (result.isEmpty()) {
-            val capitalized = trimmed.capitalize()
-            result = MedicineEntity.find { MedicineTable.name eq capitalized }.toList()
-        }
+        val dbLookupResult = MedicineEntity.find { MedicineTable.name eq indexLookupResult }.toList()
 
-        val medicine = result.singleOrNull()?.let { medicineEntity ->
+        val medicine = dbLookupResult.singleOrNull()?.let { medicineEntity ->
             MedicineWithDescription(
                 name = medicineEntity.name,
                 description = medicineEntity.description,
@@ -33,7 +38,7 @@ class VetMedicineServiceImpl : VetMedicineService {
         }
 
         MedicineSearchResult(
-            misspellMatches = if (medicine == null) result.map { it.name } else emptyList(),
+            misspellMatches = if (medicine == null) dbLookupResult.map { it.name } else emptyList(),
             medicine = medicine,
         )
     }
@@ -49,33 +54,45 @@ class VetMedicineServiceImpl : VetMedicineService {
         }
     }
 
-    override fun setAll(entries: List<MedicineWithDescription>): Unit = transaction {
-        MedicineTable.deleteAll()
-        entries.forEach { entry ->
-            val nextMedicineId = UUID.randomUUID()
+    @Synchronized
+    override fun setAll(entries: List<MedicineWithDescription>) {
+        transaction {
+            MedicineTable.deleteAll()
+            entries.forEach { entry ->
+                val nextMedicineId = UUID.randomUUID()
 
-            MedicineTable.insert {
-                it[id] = nextMedicineId
-                it[name] = entry.name
-                it[description] = entry.description
-            }
-
-            entry.activeIngredients.forEach { activeIngredientName ->
-                ActiveIngredientTable.insert {
-                    it[id] = UUID.randomUUID()
-                    it[medicineId] = nextMedicineId
-                    it[name] = activeIngredientName
+                MedicineTable.insert {
+                    it[id] = nextMedicineId
+                    it[name] = entry.name
+                    it[description] = entry.description
                 }
-            }
 
-            entry.analogues.forEach { analogueName ->
-                MedicineAnalogueTable.insert {
-                    it[id] = UUID.randomUUID()
-                    it[medicineId] = nextMedicineId
-                    it[name] = analogueName
+                entry.activeIngredients.forEach { activeIngredientName ->
+                    ActiveIngredientTable.insert {
+                        it[id] = UUID.randomUUID()
+                        it[medicineId] = nextMedicineId
+                        it[name] = activeIngredientName
+                    }
+                }
+
+                entry.analogues.forEach { analogueName ->
+                    MedicineAnalogueTable.insert {
+                        it[id] = UUID.randomUUID()
+                        it[medicineId] = nextMedicineId
+                        it[name] = analogueName
+                    }
                 }
             }
         }
+        rebuildIndex()
+    }
+
+    private fun rebuildIndex() {
+        index = getAll().flatMap { medicine ->
+            listOf(medicine.name.trim().lowercase() to medicine.name) +
+                    medicine.activeIngredients.map { ingredient -> ingredient.trim().lowercase() to medicine.name } +
+                    medicine.analogues.map { analogue -> analogue.trim().lowercase() to medicine.name }
+        }.toMap()
     }
 
     private fun String.capitalize(): String {
