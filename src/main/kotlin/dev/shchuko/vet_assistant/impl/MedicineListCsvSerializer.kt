@@ -43,13 +43,27 @@ class MedicineListCsvSerializer : MedicineListSerializer {
             .readValues<CsvEntry>(input)
             .readAll()
 
-        return parsed.map { entry ->
-            MedicineWithDescription(
-                name = entry.name.trim(),
-                description = entry.description.trim(),
-                activeIngredients = entry.ingredients.split(",").map(String::trim).distinct(),
-                analogues = entry.analogues.split(",").map(String::trim).distinct(),
-            )
-        }.distinctBy { it.name }
+        return parsed
+            .filter { entry -> entry.name.isNotBlank() }
+            .map { entry ->
+                MedicineWithDescription(
+                    name = entry.name.trim(),
+                    description = entry.description.trim(),
+                    activeIngredients = entry.ingredients
+                        .split(",")
+                        .asSequence()
+                        .map(String::trim)
+                        .distinct()
+                        .filter(String::isNotBlank)
+                        .toList(),
+                    analogues = entry.analogues
+                        .split(",")
+                        .asSequence()
+                        .map(String::trim)
+                        .distinct()
+                        .filter(String::isNotBlank)
+                        .toList(),
+                )
+            }.distinctBy { it.name }
     }
 }
