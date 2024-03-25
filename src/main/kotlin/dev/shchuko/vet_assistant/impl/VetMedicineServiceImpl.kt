@@ -94,12 +94,4 @@ class VetMedicineServiceImpl : VetMedicineService {
                     medicine.analogues.map { analogue -> analogue.trim().lowercase() to medicine.name }
         }.toMap()
     }
-
-    private fun String.capitalize(): String {
-        if (this.isEmpty()) {
-            return this;
-        }
-
-        return substring(0, 1).uppercase() + substring(1)
-    }
 }

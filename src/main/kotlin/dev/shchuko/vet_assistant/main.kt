@@ -5,15 +5,8 @@ import dev.shchuko.vet_assistant.api.MedicineListSerializer
 import dev.shchuko.vet_assistant.api.UserService
 import dev.shchuko.vet_assistant.api.VetMedicineService
 import dev.shchuko.vet_assistant.impl.*
-import dev.shchuko.vet_assistant.impl.db.ActiveIngredientTable
-import dev.shchuko.vet_assistant.impl.db.MedicineAnalogueTable
-import dev.shchuko.vet_assistant.impl.db.MedicineTable
-import dev.shchuko.vet_assistant.impl.db.TelegramUserTable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -35,13 +28,6 @@ val mainModule = module {
     single<IBot>(named("vk")) { VetAssistantVkBot(vkGroupId, vkApiKey) }
 }
 
-private fun initDB() {
-    Database.connect("jdbc:h2:./h2db.db", "org.h2.Driver")
-    transaction {
-        SchemaUtils.create(MedicineTable, ActiveIngredientTable, MedicineAnalogueTable, TelegramUserTable)
-    }
-    logger.info("DB init complete")
-}
 
 fun main() {
     DatabaseConnection.init()
