@@ -2,45 +2,95 @@ package dev.shchuko.vet_assistant.impl
 
 import dev.shchuko.vet_assistant.api.VetMedicineService
 import dev.shchuko.vet_assistant.impl.db.*
+import dev.shchuko.vet_assistant.medicine.impl.service.util.MisspellCorrector
 import dev.shchuko.vet_assistant.service.model.MedicineSearchResult
 import dev.shchuko.vet_assistant.service.model.MedicineWithDescription
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.LoggerFactory
 import java.util.*
 
 class VetMedicineServiceImpl : VetMedicineService {
-    private var index: Map<String, String> = mapOf()
+    private val logger = LoggerFactory.getLogger(VetMedicineServiceImpl::class.java)
+
+    private data class IndexEntry(
+        val originalSearchableParameterName: String,
+        val medicineName: String
+    )
+
+    private var index: Map<String, IndexEntry> = mapOf()
+
+    private val misspellCorrector = MisspellCorrector(
+        cacheLimit = 5000,
+        sameWordMaxEditDistance = 2,
+        resultLimit = 5,
+    )
 
     override fun init() {
         rebuildIndex()
     }
 
-    override fun search(name: String): MedicineSearchResult = transaction {
-        val indexLookupResult = index[name.trim().lowercase()] ?: return@transaction MedicineSearchResult(
-            misspellMatches = emptyList(),
-            medicine = null,
-        )
+    override fun search(name: String): MedicineSearchResult {
+        val trimmed = name.trim()
+        var dbSearchQuery = index[trimmed.lowercase()]
 
-        val dbLookupResult = MedicineEntity.find { MedicineTable.name eq indexLookupResult }.toList()
+        var misspelled = emptyList<String>()
+        if (dbSearchQuery == null) {
+            val misspellCorrectionResult = misspellCorrector.findWord(trimmed)
+            when (misspellCorrectionResult.resultType) {
+                MisspellCorrector.SearchResult.Type.NOTHING_FOUND -> {
+                    return MedicineSearchResult(misspellMatches = emptyList(), medicine = null)
+                }
 
-        val medicine = dbLookupResult.singleOrNull()?.let { medicineEntity ->
-            MedicineWithDescription(
-                name = medicineEntity.name,
-                description = medicineEntity.description,
-                analogues = MedicineAnalogueEntity
-                    .find { MedicineAnalogueTable.medicineId eq medicineEntity.id }
-                    .map { it.name },
-                activeIngredients = ActiveIngredientEntity
-                    .find { ActiveIngredientTable.medicineId eq medicineEntity.id }
-                    .map { it.name },
+                MisspellCorrector.SearchResult.Type.EXACT_MATCH -> {
+                    dbSearchQuery = index[trimmed.lowercase()]
+                }
+
+                MisspellCorrector.SearchResult.Type.MISSPELL_CORRECTION_SINGLE_MATCH -> {
+                    dbSearchQuery = index[misspellCorrectionResult.words.single()]
+                    misspelled = listOfNotNull(dbSearchQuery?.originalSearchableParameterName)
+                }
+
+                MisspellCorrector.SearchResult.Type.MISSPELL_CORRECTION_MULTIPLE_MATCH -> {
+                    misspelled = misspellCorrectionResult.words.mapNotNull {
+                        index[it]?.originalSearchableParameterName?.trim()
+                    }
+                }
+            }
+        }
+
+        if (dbSearchQuery == null) {
+            return MedicineSearchResult(
+                misspellMatches = misspelled,
+                medicine = null,
             )
         }
 
-        MedicineSearchResult(
-            misspellMatches = if (medicine == null) dbLookupResult.map { it.name } else emptyList(),
-            medicine = medicine,
-        )
+        return transaction {
+            val dbLookupResult = MedicineEntity.find { MedicineTable.name eq dbSearchQuery.medicineName }.toList()
+
+            val medicine = dbLookupResult.singleOrNull()?.let { medicineEntity ->
+                MedicineWithDescription(
+                    name = medicineEntity.name,
+                    description = medicineEntity.description,
+                    analogues = MedicineAnalogueEntity
+                        .find { MedicineAnalogueTable.medicineId eq medicineEntity.id }
+                        .map { it.name },
+                    activeIngredients = ActiveIngredientEntity
+                        .find { ActiveIngredientTable.medicineId eq medicineEntity.id }
+                        .map { it.name },
+                )
+            }
+
+            if (medicine == null) {
+                logger.warn("${dbSearchQuery.medicineName} found in index but not found in database")
+            }
+            MedicineSearchResult(
+                misspellMatches = if (medicine == null) emptyList() else misspelled,
+                medicine = medicine,
+            )
+        }
     }
 
     override fun getAll(): List<MedicineWithDescription> = transaction {
@@ -89,9 +139,22 @@ class VetMedicineServiceImpl : VetMedicineService {
 
     private fun rebuildIndex() {
         index = getAll().flatMap { medicine ->
-            listOf(medicine.name.trim().lowercase() to medicine.name) +
-                    medicine.activeIngredients.map { ingredient -> ingredient.trim().lowercase() to medicine.name } +
-                    medicine.analogues.map { analogue -> analogue.trim().lowercase() to medicine.name }
+            val indexByMedicineName =
+                medicine.name.trim().lowercase() to IndexEntry(medicine.name, medicine.name)
+
+            val indexByIngredientName = medicine.activeIngredients.map { ingredient ->
+                ingredient.trim().lowercase() to IndexEntry(ingredient, medicine.name)
+            }
+
+            val indexByAnalogueName = medicine.analogues.map { analogue ->
+                analogue.trim().lowercase() to IndexEntry(analogue, medicine.name)
+            }
+
+            listOf(indexByMedicineName) + indexByIngredientName + indexByAnalogueName
         }.toMap()
+
+        misspellCorrector.reloadDict(index.asSequence().map { (searchableParameter, _) ->
+            searchableParameter
+        })
     }
 }

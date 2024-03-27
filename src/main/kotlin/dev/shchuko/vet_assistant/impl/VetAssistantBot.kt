@@ -34,7 +34,13 @@ abstract class VetAssistantBot : IBot, KoinComponent {
         val result = medicineService.search(medicineName)
         return when {
             result.medicine != null -> buildString {
+                if (result.misspellMatches.isNotEmpty()) {
+                    appendLine(getString("message.medicine.search.not.found", medicineName))
+                    appendLine(getString("message.medicine.search.maybe.you.meant", result.misspellMatches.single()))
+                    appendLine()
+                }
                 appendLine(result.medicine.name)
+
                 if (result.medicine.analogues.isNotEmpty()) {
                     appendLine()
 
@@ -62,6 +68,7 @@ abstract class VetAssistantBot : IBot, KoinComponent {
             }
 
             result.misspellMatches.isEmpty() -> getString("message.medicine.search.not.found", medicineName)
+
             else -> """
                 ${getString("message.medicine.search.not.found", medicineName)}
                 
