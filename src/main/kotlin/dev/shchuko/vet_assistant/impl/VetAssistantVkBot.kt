@@ -25,6 +25,8 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
         client.sendMessage {
             peerId = event.message.peerId
             message = result
+                // vk bot does not print '+'
+                .replace("+", "%2B")
         }.execute()
     }
 
