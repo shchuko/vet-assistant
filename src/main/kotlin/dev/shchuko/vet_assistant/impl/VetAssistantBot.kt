@@ -10,6 +10,10 @@ import java.text.MessageFormat
 import java.util.*
 
 abstract class VetAssistantBot : IBot, KoinComponent {
+    companion object {
+        const val MAX_MEDICINE_NAME_LENGTH = 60
+    }
+
     protected object Commands {
         const val GET_ALL = "getAll"
     }
@@ -29,7 +33,11 @@ abstract class VetAssistantBot : IBot, KoinComponent {
     }
 
     protected fun handleSearchMedicineRequest(name: String): String? {
-        val medicineName = name.trim().takeIf(String::isNotEmpty) ?: return null
+        val medicineName = name.trim()
+
+        if (medicineName.isEmpty() || medicineName.length > MAX_MEDICINE_NAME_LENGTH) {
+            return null
+        }
 
         val result = medicineService.search(medicineName)
         return when {
