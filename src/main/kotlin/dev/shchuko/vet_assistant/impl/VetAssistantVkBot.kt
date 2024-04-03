@@ -35,15 +35,16 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
     }
 
     override suspend fun startPolling() = coroutineScope {
+        var restart = false
         while (isActive) {
             try {
-                client.startLongPolling()
+                client.startLongPolling(restart)
+                restart = true
             } catch (e: Exception) {
                 if (e is CancellationException) {
                     throw e
                 }
                 logger.error("VK Polling failed with exception, restarting", e)
-                client.stopLongPolling()
             }
         }
     }
