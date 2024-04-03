@@ -5,9 +5,13 @@ import com.petersamokhin.vksdk.core.model.VkSettings
 import com.petersamokhin.vksdk.core.model.event.MessageNew
 import com.petersamokhin.vksdk.http.VkOkHttpClient
 import kotlinx.coroutines.*
+import org.slf4j.LoggerFactory
 
 
 class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
+    companion object {
+        private val logger = LoggerFactory.getLogger(VetAssistantVkBot::class.java)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val vkHttpClient = VkOkHttpClient()
@@ -30,7 +34,17 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
         }.execute()
     }
 
-    override suspend fun startPolling() {
-        client.startLongPolling()
+    override suspend fun startPolling() = coroutineScope {
+        while (isActive) {
+            try {
+                client.startLongPolling()
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    throw e
+                }
+                client.stopLongPolling()
+                logger.error("VK Polling failed with exception", e)
+            }
+        }
     }
 }
