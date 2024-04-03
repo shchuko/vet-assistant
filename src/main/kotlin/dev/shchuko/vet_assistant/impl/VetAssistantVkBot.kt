@@ -42,8 +42,8 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
                 if (e is CancellationException) {
                     throw e
                 }
+                logger.error("VK Polling failed with exception, restarting", e)
                 client.stopLongPolling()
-                logger.error("VK Polling failed with exception", e)
             }
         }
     }
