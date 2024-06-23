@@ -49,7 +49,6 @@ dependencies {
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.0")
     implementation("com.petersamokhin.vksdk:core:0.0.8")
-    implementation("com.petersamokhin.vksdk:http-client-common-ktor::0.0.8")
     implementation("com.petersamokhin.vksdk:core-jvm:0.0.8")
     implementation("com.petersamokhin.vksdk:http-client-common-ktor-jvm:0.0.8")
 
