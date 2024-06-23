@@ -3,9 +3,14 @@ package dev.shchuko.vet_assistant.impl
 import com.petersamokhin.vksdk.core.client.VkApiClient
 import com.petersamokhin.vksdk.core.model.VkSettings
 import com.petersamokhin.vksdk.core.model.event.MessageNew
-import com.petersamokhin.vksdk.http.VkOkHttpClient
+import com.petersamokhin.vksdk.http.VkKtorHttpClient
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.minutes
 
 
 class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
@@ -13,8 +18,21 @@ class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
         private val logger = LoggerFactory.getLogger(VetAssistantVkBot::class.java)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val vkHttpClient = VkOkHttpClient()
+    private val vkHttpClient = VkKtorHttpClient(
+        CoroutineScope(Dispatchers.Default).coroutineContext, // have no idea why this is needed
+        HttpClient(CIO) {
+            install(HttpRequestRetry) {
+                retryOnExceptionOrServerErrors(maxRetries = 10)
+                exponentialDelay()
+            }
+
+            install(HttpTimeout) {
+                connectTimeoutMillis = 2.minutes.inWholeMilliseconds
+                requestTimeoutMillis = 2.minutes.inWholeMilliseconds
+                socketTimeoutMillis = 2.minutes.inWholeMilliseconds
+            }
+        }
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val client = VkApiClient(groupId, apiKey, VkApiClient.Type.Community, VkSettings(vkHttpClient)).also { client ->
