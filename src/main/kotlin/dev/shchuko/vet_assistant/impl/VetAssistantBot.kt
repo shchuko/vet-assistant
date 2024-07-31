@@ -81,6 +81,8 @@ abstract class VetAssistantBot : IBot, KoinComponent {
                 ${getString("message.medicine.search.not.found", medicineName)}
                 
                 ${getString("message.medicine.search.maybe.you.meant", result.misspellMatches.joinToString())}
+                
+                ${getString("message.medicine.search.try.enter.active.ingredient")}
             """.trimIndent()
         }
     }
