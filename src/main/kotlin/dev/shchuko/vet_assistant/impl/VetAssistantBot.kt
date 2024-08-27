@@ -16,6 +16,7 @@ abstract class VetAssistantBot : IBot, KoinComponent {
 
     protected object Commands {
         const val GET_ALL = "getAll"
+        const val START = "start"
     }
 
     private val messagesBundle = ResourceBundle.getBundle("vet_bot_messages")
@@ -98,4 +99,6 @@ abstract class VetAssistantBot : IBot, KoinComponent {
     }
 
     protected fun getFileTooBigMessage() = getString("message.file.too.big")
+
+    protected fun getStartMessage() = getString("message.bot.start.response")
 }

@@ -5,10 +5,11 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.dispatcher.document
-import com.github.kotlintelegrambot.dispatcher.text
+import com.github.kotlintelegrambot.dispatcher.message
 import com.github.kotlintelegrambot.entities.ChatId
 import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.TelegramFile
+import com.github.kotlintelegrambot.extensions.filters.Filter
 import com.github.kotlintelegrambot.logging.LogLevel
 import dev.shchuko.vet_assistant.api.UserService
 import org.koin.core.component.inject
@@ -24,15 +25,19 @@ class VetAssistantTelegramBot(apiKey: String) : VetAssistantBot() {
         logLevel = LogLevel.Error
 
         dispatch {
-            text {
-                val messageText = message.text ?: return@text
-                val result = handleSearchMedicineRequest(messageText) ?: return@text
+            message(Filter.Text and !Filter.Command) {
+                val messageText = message.text ?: return@message
+                val result = handleSearchMedicineRequest(messageText) ?: return@message
                 bot.sendMessage(ChatId.fromId(message.chat.id), result)
             }
 
             command(Commands.GET_ALL) {
                 if (!message.isAdminMessage()) return@command
                 sendCurrentMedicineEntries(bot, message)
+            }
+
+            command(Commands.START) {
+                sendStartMessage(bot, message)
             }
 
             document {
@@ -71,6 +76,10 @@ class VetAssistantTelegramBot(apiKey: String) : VetAssistantBot() {
                 filename = "medicine_list.csv"
             )
         )
+    }
+
+    private fun sendStartMessage(bot: Bot, message: Message) {
+        bot.sendMessage(ChatId.fromId(message.chat.id), getStartMessage())
     }
 
     override suspend fun startPolling() {
