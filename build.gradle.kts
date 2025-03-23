@@ -2,7 +2,6 @@
 
 val kotlin_version: String by project
 val kotlinx_serialization: String by project
-val ktor_version: String by project
 val koin_version: String by project
 val koin_logger_version: String by project
 val sl4j_version: String by project
@@ -37,9 +36,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.8")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
 
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
-
     implementation("ru.homyakin:iuliia-java:1.8") // TODO get rid of vulnerable dependency
     implementation("io.insert-koin:koin-logger-slf4j:$koin_logger_version")
 
@@ -48,9 +44,6 @@ dependencies {
     implementation("org.apache.commons:commons-text:1.10.0")
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.17.0")
-    implementation("com.petersamokhin.vksdk:core:0.0.8")
-    implementation("com.petersamokhin.vksdk:core-jvm:0.0.8")
-    implementation("com.petersamokhin.vksdk:http-client-common-ktor-jvm:0.0.8")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
@@ -60,6 +53,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
 
     implementation("com.h2database:h2:2.2.224")
+    implementation("com.vk.api:sdk:1.0.16")
 
     runtimeOnly("org.postgresql:postgresql:42.7.3")
 

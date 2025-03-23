@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger(::main.javaClass)
 
-private val vkGroupId = System.getenv("VK_GROUP_ID")?.toInt() ?: error("Missing VK_GROUP_ID")
+private val vkGroupId = System.getenv("VK_GROUP_ID")?.toLong() ?: error("Missing VK_GROUP_ID")
 private val vkApiKey = System.getenv("VK_API_KEY") ?: error("Missing VK_API_KEY")
 private val telegramApiKey = System.getenv("TELEGRAM_API_KEY") ?: error("Missing TELEGRAM_API_KEY")
 

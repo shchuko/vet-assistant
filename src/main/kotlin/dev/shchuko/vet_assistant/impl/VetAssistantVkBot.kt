@@ -1,66 +1,59 @@
 package dev.shchuko.vet_assistant.impl
 
-import com.petersamokhin.vksdk.core.client.VkApiClient
-import com.petersamokhin.vksdk.core.model.VkSettings
-import com.petersamokhin.vksdk.core.model.event.MessageNew
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpTimeout
+import com.vk.api.sdk.client.VkApiClient
+import com.vk.api.sdk.client.actors.GroupActor
+import com.vk.api.sdk.events.longpoll.GroupLongPollApi
+import com.vk.api.sdk.exceptions.ClientException
+import com.vk.api.sdk.httpclient.HttpTransportClient
+import com.vk.api.sdk.objects.callback.MessageNew
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
-import kotlin.time.Duration.Companion.minutes
 
 
-class VetAssistantVkBot(groupId: Int, apiKey: String) : VetAssistantBot() {
+class VetAssistantVkBot(groupId: Long, apiKey: String) : VetAssistantBot() {
     companion object {
         private val logger = LoggerFactory.getLogger(VetAssistantVkBot::class.java)
     }
 
-    private val vkHttpClient = CustomVkHttpClient(
-        HttpClient(CIO) {
-            install(HttpRequestRetry) {
-                retryOnExceptionOrServerErrors(maxRetries = 10)
-                exponentialDelay()
-            }
-
-            install(HttpTimeout) {
-                connectTimeoutMillis = 2.minutes.inWholeMilliseconds
-                requestTimeoutMillis = 2.minutes.inWholeMilliseconds
-                socketTimeoutMillis = 2.minutes.inWholeMilliseconds
-            }
-        }
-    )
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val client = VkApiClient(groupId, apiKey, VkApiClient.Type.Community, VkSettings(vkHttpClient)).also { client ->
-        client.onMessage { handleMessage(it) }
-    }
-
+    private val transportClient = HttpTransportClient()
+    private val vk = VkApiClient(transportClient)
+    private val groupActor = GroupActor(groupId, apiKey)
     private val cs = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    override suspend fun startPolling() {
+        val longPoll = VkMessageHandlerBridge(vk, groupActor, 1) { (fromId, userInput) ->
+            if (fromId == Math.negateExact(groupActor.groupId)) {
+                return@VkMessageHandlerBridge
+            }
+            cs.launch {
+                try {
+                    val result = handleSearchMedicineRequest(userInput) ?: return@launch
 
-    private fun handleMessage(event: MessageNew): Job = cs.launch {
-        val result = handleSearchMedicineRequest(event.message.text) ?: return@launch
-        client.sendMessage {
-            peerId = event.message.peerId
-            message = result
-                // vk bot does not print '+'
-                .replace("+", "%2B")
-        }.execute()
+                    vk.messages().sendUserIds(groupActor)
+                        .peerId(fromId)
+                        .randomId(0)
+                        .message(result)
+                        .executeAsString()
+                } catch (e: ClientException) {
+                    logger.error("Failed to send message to peer={}", fromId, e)
+                }
+            }
+        }
+        longPoll.run()
     }
 
-    override suspend fun startPolling() = coroutineScope {
-        var restart = false
-        while (isActive) {
-            try {
-                client.startLongPolling(restart)
-                restart = true
-            } catch (e: Exception) {
-                logger.error("VK Polling failed with exception", e)
-                ensureActive()
-                logger.error("Restarting VK Polling", e)
-            }
+
+    private data class VkMessage(val peerId: Long, val text: String)
+
+    private inner class VkMessageHandlerBridge(
+        client: VkApiClient,
+        actor: GroupActor,
+        waitTime: Int,
+        private val handler: (VkMessage) -> Unit
+    ) : GroupLongPollApi(client, actor, waitTime) {
+        override fun messageNew(groupId: Int?, message: MessageNew?) {
+            val message = message ?: return
+            handler(VkMessage(message.`object`.message.peerId, message.`object`.message.text ?: return))
         }
     }
 }
