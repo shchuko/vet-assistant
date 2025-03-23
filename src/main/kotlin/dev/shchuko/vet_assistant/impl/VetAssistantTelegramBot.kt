@@ -13,8 +13,12 @@ import com.github.kotlintelegrambot.extensions.filters.Filter
 import com.github.kotlintelegrambot.logging.LogLevel
 import dev.shchuko.vet_assistant.api.UserService
 import org.koin.core.component.inject
+import org.slf4j.LoggerFactory
 
 class VetAssistantTelegramBot(apiKey: String) : VetAssistantBot() {
+    companion object {
+        private val log = LoggerFactory.getLogger(VetAssistantTelegramBot::class.java)
+    }
     // 100 mb
     private val maxFileSizeBytes = 100 * 1024 * 1024
 
@@ -83,6 +87,8 @@ class VetAssistantTelegramBot(apiKey: String) : VetAssistantBot() {
     }
 
     override suspend fun startPolling() {
+        log.info("Starting Telegram long-polling")
         bot.startPolling()
+        log.info("Telegram long-polling started")
     }
 }

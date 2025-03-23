@@ -21,6 +21,7 @@ class VetAssistantVkBot(groupId: Long, apiKey: String) : VetAssistantBot() {
     private val cs = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override suspend fun startPolling() {
+        logger.info("Starting VK long-polling")
         val longPoll = VkMessageHandlerBridge(vk, groupActor, 1) { (fromId, userInput) ->
             if (fromId == Math.negateExact(groupActor.groupId)) {
                 return@VkMessageHandlerBridge
@@ -40,6 +41,7 @@ class VetAssistantVkBot(groupId: Long, apiKey: String) : VetAssistantBot() {
             }
         }
         longPoll.run()
+        logger.info("VK long-polling started")
     }
 
 
